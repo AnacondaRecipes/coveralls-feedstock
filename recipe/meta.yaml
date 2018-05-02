@@ -16,7 +16,7 @@ build:
     - coveralls = coveralls.cli:main
 
 requirements:
-  build:
+  host:
     - pytest-runner
     - python
     - setuptools
