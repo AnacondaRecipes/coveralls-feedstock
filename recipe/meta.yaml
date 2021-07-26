@@ -36,7 +36,10 @@ test:
     - coveralls.cli
     - coveralls.git
     - coveralls.reporter
+  requires:
+    - pip
   commands:
+    - pip check
     - coveralls --help
 
 about:
