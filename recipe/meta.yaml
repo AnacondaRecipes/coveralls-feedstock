@@ -36,7 +36,7 @@ requirements:
 # FileNotFoundError: [Errno 2] No such file or directory: 'git
 {% set ignore_tests = "--ignore=gh/tests/git_test.py" %}
 # PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\cygwin64\\tmp\\tmpjt8i_xki'
-{% set ignore_tests = ignore_tests + "--ignore=gh/tests/integration_test.py" %}  # [win]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/integration_test.py" %}  # [win]
 {% set deselect_tests = "" %}
 # PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpbtruvha8'
 {% set deselect_tests = deselect_tests + " --deselect=gh/tests/api/wear_test.py::WearTest::test_merge" %}  # [win]
