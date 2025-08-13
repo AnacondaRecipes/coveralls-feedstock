@@ -1,35 +1,53 @@
 {% set name = "coveralls" %}
-{% set version = "3.2.0" %}
+{% set version = "4.0.1" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 15a987d9df877fff44cd81948c5806ffb6eafb757b3443f737888358e96156ee
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: 7b2a0a2bcef94f295e3cf28dcc55ca40b71c77d1c2446b538e85f0f7bc21aa69
+  - url: https://github.com/TheKevJames/{{ name }}-python/archive/refs/tags/{{ version }}.tar.gz
+    sha256: 066f5e775359dda1c8e4b152f49ce6e2ea1f1e36738c08333af1bb3abc697bf5
+    folder: gh
 
 build:
-  noarch: python
   number: 0
-  script: {{ PYTHON }} -m pip install . --no-deps -vv
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   entry_points:
     - coveralls = coveralls.cli:main
+    - python-coveralls = coveralls.cli:main
+  skip: true  # [py<38 or py>312]
 
 requirements:
   host:
     - pip
-    - python >=3.5
-    - setuptools
-    - wheel
+    - python
+    - poetry-core >=1.0.0
   run:
-    - coverage >=4.1,<6.0
-    - docopt >=0.6.1
-    - python >=3.5
-    - pyyaml >=3.10
-    - requests >=1.0.0
+    - python
+    - coverage >=5.0,<8.0,!=6.0.*,!=6.1,!=6.1.1
+    - docopt >=0.6.1,<0.7.0
+    - requests >=1.0.0,<3.0.0
+  run_constrained:
+    - pyyaml >=3.10,<7.0
+
+# FileNotFoundError: [Errno 2] No such file or directory: 'git
+{% set ignore_tests = "--ignore=gh/tests/git_test.py" %}
+# PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\cygwin64\\tmp\\tmpjt8i_xki'
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/integration_test.py" %}  # [win]
+{% set deselect_tests = "" %}
+# PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpbtruvha8'
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/api/wear_test.py::WearTest::test_merge" %}  # [win]
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/api/wear_test.py::WearTest::test_merge_empty_data" %}  # [win]
+{% set deselect_tests = deselect_tests + " --deselect=gh/tests/api/wear_test.py::WearTest::test_merge_invalid_data" %}  # [win]
 
 test:
+  source_files:
+    - gh/tests
+    - gh/example
+    - gh/nonunicode
   imports:
     - coveralls
     - coveralls.api
@@ -38,22 +56,27 @@ test:
     - coveralls.reporter
   requires:
     - pip
+    - pytest >=8.2.0
+    - responses >=0.25.0
   commands:
     - pip check
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest {{ ignore_tests }} {{ deselect_tests }} gh/tests
     - coveralls --help
+    - python-coveralls --help
 
 about:
-  home: https://github.com/coveralls-clients/coveralls-python
+  home: https://github.com/TheKevJames/coveralls-python
   license: MIT
   license_family: MIT
-  license_file: LICENSE.txt
+  license_file: LICENSE.rst
   summary: Show coverage stats online via coveralls.io
   description: |
     coveralls.io is a service for publishing your coverage stats online. This
     package provides seamless integration with coverage.py (and thus py.test,
     nosetests, etc...) in your Python projects.
-  dev_url: https://github.com/coveralls-clients/coveralls-python
-  doc_url: https://coveralls-python.rtfd.io/
+  dev_url: https://github.com/TheKevJames/coveralls-python
+  doc_url: https://coveralls-python.readthedocs.io
 
 extra:
   recipe-maintainers:
